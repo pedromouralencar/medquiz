@@ -79,10 +79,13 @@ const store={get(){try{const v=JSON.parse(localStorage.getItem('medquiz_hist')||
 
 /* ---------- Única função que fala com a IA (via Cloudflare Worker) ---------- */
 async function askAI(prompt){
- let res;
- try{res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})})}
- catch{throw new Error('Falha de conexão com o servidor. Verifique sua internet e tente de novo.')}
- const raw=await res.text();let data;
+ let res,raw;
+ const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),150000);
+ try{
+  try{res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt}),signal:ctl.signal});raw=await res.text()}
+  catch(e){throw new Error(e&&e.name==='AbortError'?'A IA demorou demais para responder. Tente novamente.':'Falha de conexão com o servidor. Verifique sua internet e tente de novo.')}
+ }finally{clearTimeout(tm)}
+ let data;
  try{data=JSON.parse(raw)}catch{throw new Error('O servidor devolveu uma resposta inválida (HTTP '+res.status+').')}
  if(!res.ok)throw new Error(typeof data.error==='string'?data.error:'Erro do servidor (HTTP '+res.status+').');
  let t=typeof data.text==='string'?data.text.trim():'';
@@ -128,19 +131,21 @@ async function gen(o){
  const back=S.screen==='load'?'home':S.screen;
  S.busy=true;S.err='';S.screen='load';S.prog='';S.cust=false;render();
  try{
-  const qs=[];let tries=0;
+  const qs=[];let tries=0,why='';
   while(qs.length<o.n&&tries<6){
    tries++;
    const k=Math.min(10,o.n-qs.length);
    S.prog=qs.length?`${qs.length} de ${o.n} questões prontas…`:'';render();
-   let r=await askAI(genPrompt(o,k,qs.map(q=>q.stem)));
+   let r;
+   try{r=await askAI(genPrompt(o,k,qs.map(q=>q.stem)))}
+   catch(e){if(qs.length){why=e.message||'';break}throw e}
    if(r&&!Array.isArray(r))r=r.questions||r.items;
-   if(!Array.isArray(r))throw new Error('A IA não devolveu uma lista de questões.');
+   if(!Array.isArray(r)){if(qs.length){why='A IA não devolveu uma lista de questões.';break}throw new Error('A IA não devolveu uma lista de questões.')}
    r.map(normQ).filter(Boolean).forEach(q=>{if(qs.length<o.n)qs.push(q)});
   }
   if(!qs.length)throw new Error('A IA não devolveu questões válidas. Tente novamente.');
   Object.assign(S,{run:o,qs,i:0,res:[],sel:'',txt:'',fb:null,screen:'quiz',active:true});
-  if(qs.length<o.n)S.err=`Foram geradas ${qs.length} de ${o.n} questões válidas.`;
+  if(qs.length<o.n)S.err=`Foram geradas ${qs.length} de ${o.n} questões válidas.${why?' Motivo: '+why:''}`;
  }catch(e){S.err=e.message||'Erro inesperado.';S.screen=back}
  S.busy=false;render();
 }
@@ -343,3 +348,4 @@ render();
 </script>
 </body>
 </html>
+
