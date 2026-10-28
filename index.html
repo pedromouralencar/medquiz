@@ -1,220 +1,25 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>MedQuiz AI</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,600&display=swap" rel="stylesheet">
-<style>
-:root{--bg:#f2f6f7;--surface:#fff;--ink:#12232e;--muted:#5b6b75;--line:#d5e0e4;--accent:#0e7c86;--accent-ink:#fff;--ok:#1f7a4d;--okbg:#e2f4ea;--warn:#8a5a00;--warnbg:#fff2d6;--bad:#b3261e;--badbg:#fde8e6;color-scheme:light;
-box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1a20;--surface:#16262e;--ink:#e6eef1;--muted:#93a6af;--line:#2a3f49;--accent:#4cc3cd;--accent-ink:#06242a;--ok:#6fd49d;--okbg:#173a29;--warn:#f0c15f;--warnbg:#3a2e12;--bad:#ff8f86;--badbg:#44201d;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#0e1a20;--surface:#16262e;--ink:#e6eef1;--muted:#93a6af;--line:#2a3f49;--accent:#4cc3cd;--accent-ink:#06242a;--ok:#6fd49d;--okbg:#173a29;--warn:#f0c15f;--warnbg:#3a2e12;--bad:#ff8f86;--badbg:#44201d;color-scheme:dark}
-*{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-.wrap{max-width:640px;margin:0 auto;padding:16px 16px 48px}
-header{display:flex;align-items:center;justify-content:space-between;padding:4px 0 18px}
-.brand{font:600 22px "Newsreader",Georgia,serif;letter-spacing:.2px}
-.brand i{font-style:normal;color:var(--accent)}
-nav{display:flex;gap:4px}
-nav button{background:none;border:0;color:var(--muted);font:inherit;font-size:14px;padding:8px 10px;border-radius:8px;cursor:pointer}
-nav button.on{color:var(--ink);background:var(--surface);border:1px solid var(--line)}
-h1,h2{font:600 30px/1.15 "Newsreader",Georgia,serif;margin:0 0 14px}
-h2{font-size:22px}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
-label.t{display:block;font-size:14px;color:var(--muted);margin:16px 0 6px}
-input[type=text],textarea{width:100%;font:inherit;font-size:17px;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:12px}
-textarea{min-height:140px;resize:vertical}
-input:focus,textarea:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.seg{display:flex;gap:6px;flex-wrap:wrap}
-.seg button{flex:1 1 auto;font:inherit;font-size:15px;padding:10px 12px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
-.seg button.on{border-color:var(--accent);background:var(--accent);color:var(--accent-ink);font-weight:600}
-.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.chips button{font:inherit;font-size:13px;padding:5px 10px;border-radius:99px;border:1px solid var(--line);background:none;color:var(--muted);cursor:pointer}
-.primary{width:100%;margin-top:20px;font:inherit;font-weight:600;font-size:17px;padding:14px;border:0;border-radius:12px;background:var(--accent);color:var(--accent-ink);cursor:pointer}
-.primary:disabled{opacity:.45;cursor:default}
-.ghost{font:inherit;font-size:15px;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:none;color:var(--ink);cursor:pointer}
-.note{font-size:13px;color:var(--muted);line-height:1.5}
-.bar{height:6px;background:var(--line);border-radius:9px;overflow:hidden;margin-bottom:6px}
-.bar>div{height:100%;background:var(--accent);transition:width .3s}
-.meta{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:12px}
-.stem{font:400 20px/1.45 "Newsreader",Georgia,serif;margin:0 0 16px}
-.opt{display:flex;gap:10px;width:100%;text-align:left;font:inherit;padding:12px;margin-bottom:8px;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);cursor:pointer}
-.opt b{flex:none;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-size:13px}
-.opt.sel{border-color:var(--accent)}.opt.sel b{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-.opt.right{border-color:var(--ok);background:var(--okbg)}.opt.wrong{border-color:var(--bad);background:var(--badbg)}
-.badge{display:inline-block;font-weight:600;font-size:14px;padding:4px 12px;border-radius:99px;margin-bottom:10px}
-.badge.c{background:var(--okbg);color:var(--ok)}.badge.p{background:var(--warnbg);color:var(--warn)}.badge.i{background:var(--badbg);color:var(--bad)}
-.fb h3{font-size:14px;margin:14px 0 4px;color:var(--accent)}
-.fb p,.fb ul{margin:0;font-size:15.5px}.fb ul{padding-left:20px}
-.score{font:600 56px/1 "Newsreader",Georgia,serif}
-.row{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--line);font-size:14.5px}
-.row:first-of-type{border-top:0}
-.hbar{display:flex;align-items:flex-end;gap:4px;height:80px;margin:8px 0}
-.hbar div{flex:1;background:var(--accent);border-radius:4px 4px 0 0;min-height:3px}
-.spin{width:34px;height:34px;border:4px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:s 1s linear infinite;margin:0 auto 14px}
-@keyframes s{to{transform:rotate(360deg)}}
-@media (prefers-reduced-motion:reduce){.spin{animation-duration:3s}.bar>div{transition:none}}
-.err{background:var(--badbg);color:var(--bad);border-radius:10px;padding:12px;margin-top:14px;font-size:14.5px}
-.center{text-align:center;padding:36px 8px}
-</style>
-</head>
-<body>
-<div class="wrap">
-<header><div class="brand">Med<i>Quiz</i> AI</div><nav id="nav"></nav></header>
-<main id="app"></main>
-</div>
-<script>
-const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const $=s=>document.querySelector(s);
-
-const API_URL = 'https://medquiz-api.jpmouraa2017.workers.dev/';
-
-async function askAI(prompt) {
-  const response = await fetch(API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prompt })
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.error || 'Erro ao consultar a IA.');
-  }
-
-  let text = data.text.trim();
-  text = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
-
-  try {
-    return JSON.parse(text);
-  } catch {
-    throw new Error('A IA não retornou JSON válido. Tente novamente.');
-  }
-}
-
-const S={screen:'home',cfg:{topic:'',level:'Intermediário',n:5,fmt:'misto'},qs:[],i:0,res:[],sel:'',txt:'',busy:false,err:'',fb:null,clr:false};
- render();
-const VER={c:['Correta','c',1],p:['Parcialmente correta','p',.5],i:['Incorreta','i',0]};
-const store={get(){try{return JSON.parse(localStorage.getItem('medquiz_hist')||'[]')}catch{return[]}},set(v){try{localStorage.setItem('medquiz_hist',JSON.stringify(v))}catch{}}};
-
-function errMsg(e){const c=e&&e.code;
- if(c==='not_granted')return 'Você não autorizou o uso do Claude neste aplicativo. Toque no botão de novo e aceite a permissão.';
- if(c==='rate_limited')return 'Limite de uso atingido (comum no plano gratuito). Aguarde alguns minutos e tente de novo.';
- return 'Não foi possível concluir a chamada de IA. '+(e&&e.message?e.message:'Tente novamente.')}
-
-async function gen(){
- const c=S.cfg;if(!c.topic.trim())return;
- S.screen='load';S.err='';render();
- const f={mc:'todas de múltipla escolha (type "mc")',open:'todas discursivas (type "open")',misto:'metade múltipla escolha ("mc") e metade discursivas ("open"), intercaladas'}[c.fmt];
- const p=`Você é professor de medicina e elabora provas para estudantes brasileiros. Crie ${c.n} questões INÉDITAS sobre: "${c.topic.trim()}". Nível: ${c.level} (Básico = conceitos e definições; Intermediário = casos clínicos curtos e fisiopatologia; Avançado = casos complexos, diagnóstico diferencial e integração de mecanismos). Formato: ${f}.
-Regras: português do Brasil; contextualize com vinhetas clínicas quando adequado; varie os subtópicos (definição, etiologia, fisiopatologia, quadro clínico, diagnóstico, morfologia, tratamento); alternativas plausíveis, uma única correta, com a letra correta variando entre A–D; use critérios consistentes com Robbins & Cotran, Harrison, Guyton & Hall e Abbas conforme o assunto, mas NÃO cite capítulos, páginas, autores de artigos nem invente referências.
-Responda SOMENTE com um array JSON, sem markdown. Cada item: {"type":"mc"|"open","subtopic":"string curta","stem":"enunciado","options":["texto A","texto B","texto C","texto D"] (só em mc, sem prefixo de letra),"correct":"A"|"B"|"C"|"D" (só em mc),"key_points":["pontos essenciais que uma boa resposta discursiva deve conter"] (só em open, 3 a 6 itens)}.`;
- try{
-  let r=await askAI(p);
-  if(r&&!Array.isArray(r))r=r.questions||r.items;
-  const qs=(r||[]).filter(q=>q&&q.stem&&(q.type==='open'?Array.isArray(q.key_points):(Array.isArray(q.options)&&q.options.length===4&&'ABCD'.includes(q.correct)))).slice(0,c.n);
-  if(!qs.length)throw{message:'A IA não devolveu questões válidas.'};
-  Object.assign(S,{qs,i:0,res:[],sel:'',txt:'',fb:null,screen:'quiz'});
- }catch(e){S.err=errMsg(e);S.screen='home'}
- render();
-}
-
-async function answer(){
- const q=S.qs[S.i],mc=q.type!=='open';
- const resp=mc?S.sel:S.txt.trim();if(!resp||S.busy)return;
- S.busy=true;S.err='';render();
- const p=`Você é professor de medicina corrigindo a resposta de um estudante. Seja específico, didático e rigoroso, em português do Brasil, com base no consenso de Robbins & Cotran, Harrison, Guyton & Hall e Abbas conforme o assunto. Não cite capítulos nem invente referências.
-Tema: ${S.cfg.topic}. Nível: ${S.cfg.level}.
-Questão: ${q.stem}
-${mc?`Alternativas: ${q.options.map((o,i)=>'ABCD'[i]+') '+o).join(' | ')}
-Gabarito: ${q.correct}. Resposta do estudante: ${resp}.`:`Pontos essenciais esperados: ${q.key_points.join('; ')}.
-Resposta do estudante: """${resp}"""`}
-Responda SOMENTE com JSON: {"verdict":"correct"|"partial"|"incorrect"${mc?' (deve ser '+(resp===q.correct?'"correct"':'"incorrect"')+')':''},"explanation":"raciocínio que justifica a resposta correta${mc?' e por que a alternativa escolhida está certa ou errada':' e o que o estudante acertou ou deixou de dizer'}","conceptual_errors":["erros conceituais identificados; lista vazia se não houver"],"pathophysiology":"mecanismo fisiopatológico relevante, em passos causais","better_answer":"${mc?'como raciocinar para eliminar distratores e chegar à resposta':'modelo de resposta melhor e bem estruturada'}","review_topics":["1 a 3 assuntos específicos para revisar"]}`;
- try{
-  const r=await askAI(p)
-  let v={correct:'c',partial:'p',incorrect:'i'}[r.verdict]||'i';
-  if(mc)v=resp===q.correct?'c':'i';
-  S.fb={...r,v};S.res[S.i]={q,resp,v,fb:S.fb};
- }catch(e){S.err=errMsg(e)}
- S.busy=false;render();
-}
-
-function next(){
- if(S.i+1<S.qs.length){S.i++;S.sel='';S.txt='';S.fb=null;S.err=''}
- else{const pts=S.res.reduce((a,r)=>a+VER[r.v][2],0),n=S.qs.length;
-  const h=store.get();h.push({d:Date.now(),topic:S.cfg.topic,level:S.cfg.level,fmt:S.cfg.fmt,pts,n,pct:Math.round(pts/n*100)});store.set(h.slice(-60));S.screen='sum'}
- render();
-}
-
-const uniq=a=>[...new Set(a.map(x=>String(x).trim()).filter(Boolean))];
-
-function render(){
- $('#nav').innerHTML=`<button data-a="home" class="${S.screen==='home'?'on':''}">Início</button><button data-a="hist" class="${S.screen==='hist'?'on':''}">Histórico</button>`;
- const A=$('#app');
- if(S.screen==='home'){const c=S.cfg,seg=(k,vals)=>vals.map(([v,l])=>`<button data-k="${k}" data-v="${v}" class="${c[k]==v?'on':''}">${l}</button>`).join('');
-  A.innerHTML=`<h1>O que você quer estudar hoje?</h1>
-  <div class="card"><label class="t" style="margin-top:0" for="topic">Assunto médico</label>
-  <input id="topic" type="text" value="${esc(c.topic)}" placeholder="Ex.: angina pectoris" autocomplete="off">
-  <div class="chips">${['Angina pectoris','Edema','Choque','Anemia','Insuficiência cardíaca'].map(t=>`<button data-chip="${t}">${t}</button>`).join('')}</div>
-  <label class="t">Dificuldade</label><div class="seg">${seg('level',[['Básico','Básico'],['Intermediário','Intermediário'],['Avançado','Avançado']])}</div>
-  <label class="t">Número de questões</label><div class="seg">${seg('n',[[3,'3'],[5,'5'],[8,'8'],[10,'10']])}</div>
-  <label class="t">Formato</label><div class="seg">${seg('fmt',[['mc','Múltipla escolha'],['open','Aberta'],['misto','Misto']])}</div>
-  <button class="primary" data-a="gen">Gerar questões com IA</button>
-  
-  ${S.err?`<div class="err">${esc(S.err)}</div>`:''}</div>
-<p class="note">As questões e correções são geradas por inteligência artificial. O histórico fica salvo apenas neste navegador. Conteúdo gerado por IA pode conter erros: confira nos livros-texto.</p> 
-  const t=$('#topic');t.oninput=()=>{S.cfg.topic=t.value};t.onkeydown=e=>{if(e.key==='Enter')gen()};
+  const st=statRows(L);let w=st.filter(x=>x.pct<70);if(!w.length)w=st.slice(0,3);
+  gen({topic:w.map(x=>x.s).join(', '),level:L.run.level,fmt:L.run.fmt,n:Math.max(1,Math.min(40,parseInt(S.cfg.n)||5)),
+   extra:'Este é um quiz de REFORÇO nos assuntos em que o estudante teve menor desempenho. Explore conceitos centrais desses assuntos com casos clínicos inéditos.'});
  }
- else if(S.screen==='load')A.innerHTML=`<div class="card center"><div class="spin"></div><b>Gerando questões inéditas sobre “${esc(S.cfg.topic)}”…</b><p class="note">Isso leva de 10 a 40 segundos.</p></div>`;
- else if(S.screen==='quiz'){
-  const q=S.qs[S.i],mc=q.type!=='open',done=!!S.fb,pct=Math.round((S.i+(done?1:0))/S.qs.length*100);
-  let h=`<div class="bar"><div style="width:${pct}%"></div></div><div class="meta"><span>Questão ${S.i+1} de ${S.qs.length}</span><span>${esc(q.subtopic||S.cfg.topic)}</span></div><div class="card"><p class="stem">${esc(q.stem)}</p>`;
-  if(mc)h+=q.options.map((o,i)=>{const L='ABCD'[i];let c=!done&&S.sel===L?'sel':'';if(done){if(L===q.correct)c='right';else if(L===S.sel)c='wrong'}return `<button class="opt ${c}" data-opt="${L}" ${done?'disabled':''}><b>${L}</b><span>${esc(o)}</span></button>`}).join('');
-  else h+=`<textarea id="txt" placeholder="Digite sua resposta…" ${done?'disabled':''}>${esc(S.txt)}</textarea>`;
-  if(!done)h+=`<button class="primary" data-a="ans" ${S.busy||!(mc?S.sel:S.txt.trim())?'disabled':''}>${S.busy?'Corrigindo…':'Responder'}</button>`;
-  h+=`</div>`;
-  if(S.err)h+=`<div class="err">${esc(S.err)}</div>`;
-  if(done){const f=S.fb,v=VER[f.v];
-   h+=`<div class="card fb"><span class="badge ${v[1]}">${v[0]}</span><p>${esc(f.explanation)}</p>
-   ${f.conceptual_errors?.length?`<h3>Erros conceituais</h3><ul>${f.conceptual_errors.map(e=>`<li>${esc(e)}</li>`).join('')}</ul>`:''}
-   <h3>Mecanismo fisiopatológico</h3><p>${esc(f.pathophysiology)}</p>
-   <h3>${mc?'Como chegar à resposta':'Como construir uma resposta melhor'}</h3><p>${esc(f.better_answer)}</p></div>
-   <button class="primary" data-a="next" style="margin-top:0">${S.i+1<S.qs.length?'Próxima questão':'Ver resultado'}</button>`}
-  A.innerHTML=h;const t=$('#txt');if(t&&!done)t.oninput=()=>{S.txt=t.value;const b=$('[data-a=ans]');if(b)b.disabled=!t.value.trim()||S.busy};
+ else if(d.a==='custgo'&&L){
+  const picks=[...S.pick];
+  if(!picks.length){S.err='Marque pelo menos um assunto.';render();return}
+  const cn=$('#cn');
+  gen({topic:picks.join(', '),level:L.run.level,fmt:L.run.fmt,n:cn?cn.value:5,extra:'Quiz personalizado de revisão com questões inéditas sobre os assuntos escolhidos.'});
  }
- else if(S.screen==='sum'){
-  const n=S.qs.length,pts=S.res.reduce((a,r)=>a+VER[r.v][2],0),pct=Math.round(pts/n*100);
-  const errs=uniq(S.res.flatMap(r=>r.fb.conceptual_errors||[])).slice(0,8),rev=uniq(S.res.flatMap(r=>r.v==='c'?[]:(r.fb.review_topics||[])));
-  A.innerHTML=`<h2>Resultado: ${esc(S.cfg.topic)}</h2><div class="card"><div class="score">${pts%1?pts.toFixed(1).replace('.',','):pts}/${n}</div><p class="note" style="margin:6px 0 0">${pct}% de aproveitamento. Respostas parcialmente corretas valem meio ponto.</p></div>
-  <div class="card"><h2>Principais erros</h2>${errs.length?`<div class="fb"><ul>${errs.map(e=>`<li>${esc(e)}</li>`).join('')}</ul></div>`:'<p class="note">Nenhum erro conceitual relevante identificado.</p>'}</div>
-  <div class="card"><h2>Assuntos para revisar</h2>${rev.length?`<div class="fb"><ul>${rev.map(e=>`<li>${esc(e)}</li>`).join('')}</ul></div>`:'<p class="note">Sem pendências. Tente um nível mais difícil.</p>'}</div>
-  <div class="card"><h2>Por questão</h2>${S.res.map((r,i)=>`<div class="row"><span>${i+1}. ${esc((r.q.subtopic||r.q.stem).slice(0,70))}</span><span class="badge ${VER[r.v][1]}" style="margin:0;white-space:nowrap">${VER[r.v][0]}</span></div>`).join('')}</div>
-  <button class="primary" data-a="home" style="margin-top:0">Nova rodada</button>`;
+ else if(d.a==='histweak'){
+  const h=store.get(),agg={};
+  h.forEach(x=>Object.entries(x.subs||{}).forEach(([k,o])=>{const a=agg[k]||(agg[k]={t:0,pts:0});a.t+=o.t;a.pts+=o.pts}));
+  const w=Object.entries(agg).map(([s,o])=>({s,pct:o.pts/o.t})).filter(x=>x.pct<.7).sort((a,b)=>a.pct-b.pct).slice(0,6);
+  if(!w.length)return;
+  gen({topic:w.map(x=>x.s).join(', '),level:S.cfg.level,fmt:S.cfg.fmt,n:Math.max(1,Math.min(40,parseInt(S.cfg.n)||5)),
+   extra:'Este é um quiz de REFORÇO baseado no histórico do estudante: os assuntos listados são os de menor desempenho acumulado. Crie questões inéditas.'});
  }
- else if(S.screen==='hist'){
-  const h=store.get().reverse(),avg=h.length?Math.round(h.reduce((a,x)=>a+x.pct,0)/h.length):0;
-  A.innerHTML=`<h2>Histórico de desempenho</h2>`+(h.length?`<div class="card"><div class="note">Média em ${h.length} rodada(s): <b style="color:var(--ink)">${avg}%</b> (barras: mais recente à esquerda)</div><div class="hbar">${h.slice(0,20).map(x=>`<div style="height:${Math.max(x.pct,3)}%" title="${x.pct}%"></div>`).join('')}</div></div>
-  <div class="card">${h.map(x=>`<div class="row"><span>${esc(x.topic)}<br><span class="note">${new Date(x.d).toLocaleDateString('pt-BR')}, ${esc(x.level)}</span></span><b>${x.pct}%</b></div>`).join('')}</div>
-  <button class="ghost" data-a="clr">${S.clr?'Toque de novo para apagar tudo':'Limpar histórico'}</button>`:'<div class="card center"><p>Nenhuma rodada concluída ainda.</p><button class="ghost" data-a="home">Começar a estudar</button></div>');
- }
-}
-
-document.addEventListener('click',e=>{
- const b=e.target.closest('button');if(!b)return;
- const d=b.dataset;
- if(d.chip){S.cfg.topic=d.chip;render()}
- else if(d.k){S.cfg[d.k]=d.k==='n'?+d.v:d.v;render()}
- else if(d.opt){if(!S.fb){S.sel=d.opt;render()}}
- else if(d.a==='gen')gen();
- else if(d.a==='ans')answer();
- else if(d.a==='next')next();
- else if(d.a==='home'){S.screen='home';S.err='';render()}
- else if(d.a==='hist'){S.screen='hist';S.clr=false;render()}
- else if(d.a==='clr'){if(S.clr){store.set([]);S.clr=false}else S.clr=true;render()}
 });
+window.addEventListener('error',e=>{const A=$('#app');if(A&&!A.innerHTML.trim())A.innerHTML=`<div class="card"><div class="err">Ocorreu um erro: ${esc(e.message)}</div></div>`});
 render();
 </script>
 </body>
 </html>
+
