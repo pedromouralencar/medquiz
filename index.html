@@ -1,3 +1,324 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MedQuiz AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f2f6f7;--surface:#fff;--ink:#12232e;--muted:#5b6b75;--line:#d5e0e4;--accent:#0e7c86;--accent-ink:#fff;--ok:#1f7a4d;--okbg:#e2f4ea;--warn:#8a5a00;--warnbg:#fff2d6;--bad:#b3261e;--badbg:#fde8e6;color-scheme:light;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1a20;--surface:#16262e;--ink:#e6eef1;--muted:#93a6af;--line:#2a3f49;--accent:#4cc3cd;--accent-ink:#06242a;--ok:#6fd49d;--okbg:#173a29;--warn:#f0c15f;--warnbg:#3a2e12;--bad:#ff8f86;--badbg:#44201d;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1a20;--surface:#16262e;--ink:#e6eef1;--muted:#93a6af;--line:#2a3f49;--accent:#4cc3cd;--accent-ink:#06242a;--ok:#6fd49d;--okbg:#173a29;--warn:#f0c15f;--warnbg:#3a2e12;--bad:#ff8f86;--badbg:#44201d;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:720px;margin:0 auto;padding:16px 16px 48px}
+header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;padding:4px 0 18px}
+.brand{font:600 22px "Newsreader",Georgia,serif;letter-spacing:.2px}
+.brand i{font-style:normal;color:var(--accent)}
+nav{display:flex;gap:4px;flex-wrap:wrap}
+nav button{background:none;border:1px solid transparent;color:var(--muted);font:inherit;font-size:14px;padding:8px 10px;border-radius:8px;cursor:pointer}
+nav button.on{color:var(--ink);background:var(--surface);border-color:var(--line)}
+h1,h2{font:600 30px/1.15 "Newsreader",Georgia,serif;margin:0 0 14px}
+h2{font-size:22px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+label.t{display:block;font-size:14px;color:var(--muted);margin:16px 0 6px}
+input[type=text],input[type=number],textarea{width:100%;font:inherit;font-size:17px;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:12px}
+textarea{min-height:110px;resize:vertical}
+input:focus,textarea:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{flex:1 1 auto;font:inherit;font-size:15px;padding:10px 12px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.seg button.on{border-color:var(--accent);background:var(--accent);color:var(--accent-ink);font-weight:600}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chips button{font:inherit;font-size:13px;padding:5px 10px;border-radius:99px;border:1px solid var(--line);background:none;color:var(--muted);cursor:pointer}
+.primary{width:100%;margin-top:20px;font:inherit;font-weight:600;font-size:17px;padding:14px;border:0;border-radius:12px;background:var(--accent);color:var(--accent-ink);cursor:pointer}
+.primary:disabled{opacity:.45;cursor:default}
+.ghost{font:inherit;font-size:15px;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:none;color:var(--ink);cursor:pointer;width:100%;margin-top:8px}
+.ghost:disabled{opacity:.45;cursor:default}
+.note{font-size:13px;color:var(--muted);line-height:1.5}
+.bar{height:6px;background:var(--line);border-radius:9px;overflow:hidden;margin-bottom:6px}
+.bar>div{height:100%;background:var(--accent);transition:width .3s}
+.meta{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--muted);margin-bottom:12px}
+.stem{font:400 20px/1.45 "Newsreader",Georgia,serif;margin:0 0 16px}
+.opt{display:flex;gap:10px;width:100%;text-align:left;font:inherit;padding:12px;margin-bottom:8px;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);cursor:pointer}
+.opt b{flex:none;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-size:13px}
+.opt.sel{border-color:var(--accent)}.opt.sel b{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.opt.right{border-color:var(--ok);background:var(--okbg)}.opt.wrong{border-color:var(--bad);background:var(--badbg)}
+.badge{display:inline-block;font-weight:600;font-size:14px;padding:4px 12px;border-radius:99px;margin-bottom:10px}
+.badge.c{background:var(--okbg);color:var(--ok)}.badge.p{background:var(--warnbg);color:var(--warn)}.badge.i{background:var(--badbg);color:var(--bad)}
+.fb h3{font-size:14px;margin:14px 0 4px;color:var(--accent)}
+.fb p,.fb ul{margin:0;font-size:15.5px}.fb ul{padding-left:20px}
+.score{font:600 56px/1 "Newsreader",Georgia,serif}
+.row{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--line);font-size:14.5px}
+.row:first-of-type{border-top:0}
+.chk{display:flex;gap:8px;align-items:flex-start;padding:6px 0;font-size:15px}
+.chk input{margin-top:5px}
+.hbar{display:flex;align-items:flex-end;gap:4px;height:80px;margin:8px 0}
+.hbar div{flex:1;background:var(--accent);border-radius:4px 4px 0 0;min-height:3px}
+.spin{width:34px;height:34px;border:4px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:s 1s linear infinite;margin:0 auto 14px}
+@keyframes s{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation-duration:3s}.bar>div{transition:none}}
+.err{background:var(--badbg);color:var(--bad);border-radius:10px;padding:12px;margin:14px 0;font-size:14.5px}
+.center{text-align:center;padding:36px 8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><div class="brand">Med<i>Quiz</i> AI</div><nav id="nav"></nav></header>
+<main id="app"></main>
+</div>
+<script>
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const $=s=>document.querySelector(s);
+const uniq=a=>[...new Set(a.map(x=>String(x).trim()).filter(Boolean))];
+const LET=['A','B','C','D','E'];
+const VER={c:['Correta','c',1],p:['Parcialmente correta','p',.5],i:['Incorreta','i',0]};
+const API_URL='https://medquiz-api.jpmouraa2017.workers.dev/';
+const store={get(){try{const v=JSON.parse(localStorage.getItem('medquiz_hist')||'[]');return Array.isArray(v)?v:[]}catch{return[]}},set(v){try{localStorage.setItem('medquiz_hist',JSON.stringify(v))}catch{}}};
+
+/* ---------- Única função que fala com a IA (via Cloudflare Worker) ---------- */
+async function askAI(prompt){
+ let res;
+ try{res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})})}
+ catch{throw new Error('Falha de conexão com o servidor. Verifique sua internet e tente de novo.')}
+ const raw=await res.text();let data;
+ try{data=JSON.parse(raw)}catch{throw new Error('O servidor devolveu uma resposta inválida (HTTP '+res.status+').')}
+ if(!res.ok)throw new Error(typeof data.error==='string'?data.error:'Erro do servidor (HTTP '+res.status+').');
+ let t=typeof data.text==='string'?data.text.trim():'';
+ if(!t)throw new Error('A IA devolveu uma resposta vazia. Tente novamente.');
+ t=t.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').trim();
+ try{return JSON.parse(t)}catch{}
+ const m=t.match(/[\[{][\s\S]*[\]}]/);
+ if(m){try{return JSON.parse(m[0])}catch{}}
+ throw new Error('A IA não retornou JSON válido. Tente novamente.');
+}
+
+/* ---------- Estado ---------- */
+const S={screen:'home',cfg:{topic:'',level:'Intermediário',n:5,fmt:'misto'},run:null,qs:[],i:0,res:[],sel:'',txt:'',busy:false,err:'',fb:null,clr:false,active:false,last:null,cust:false,pick:new Set(),prog:''};
+
+/* ---------- Validação das questões ---------- */
+function normQ(q){
+ if(!q||typeof q.stem!=='string'||!q.stem.trim())return null;
+ let subs=(Array.isArray(q.subjects)?q.subjects:[q.subtopic||q.subject]).map(x=>String(x||'').trim()).filter(Boolean).slice(0,3);
+ if(!subs.length)subs=['Geral'];
+ if(q.type==='open'){
+  const kp=Array.isArray(q.key_points)?q.key_points.map(x=>String(x).trim()).filter(Boolean):[];
+  return kp.length?{type:'open',stem:q.stem.trim(),key_points:kp,subjects:subs}:null;
+ }
+ const o=Array.isArray(q.options)?q.options.map(x=>String(x).replace(/^\s*[A-E][\)\.\-:]\s*/i,'').trim()):[];
+ const c=String(q.correct||'').trim().toUpperCase().charAt(0);
+ if(o.length<4||o.length>5||o.some(x=>!x)||!LET.slice(0,o.length).includes(c))return null;
+ return {type:'mc',stem:q.stem.trim(),options:o,correct:c,subjects:subs};
+}
+
+function genPrompt(o,k,have){
+ const f={mc:'todas de múltipla escolha (type "mc")',open:'todas discursivas (type "open")',misto:'metade múltipla escolha ("mc") e metade discursivas ("open"), intercaladas'}[o.fmt];
+ return `Você é professor de medicina e elabora provas para estudantes brasileiros. Crie ${k} questões INÉDITAS sobre os seguintes assuntos (distribua as questões entre eles): "${o.topic}". Nível: ${o.level} (Básico = conceitos e definições; Intermediário = casos clínicos curtos e fisiopatologia; Avançado = casos complexos, diagnóstico diferencial e integração de mecanismos). Formato: ${f}.
+Regras: português do Brasil; priorize raciocínio clínico, mecanismos fisiopatológicos, diagnóstico, conduta e complicações, evitando memorização simples; use vinhetas clínicas; questões de múltipla escolha com EXATAMENTE 5 alternativas (A a E), apenas uma correta, distratores plausíveis, com a letra correta variando entre A e E; NÃO cite capítulos, páginas, autores nem invente referências.${o.extra?'\n'+o.extra:''}${have.length?'\nNão repita estes enunciados já criados: '+have.map(s=>s.slice(0,80)).join(' | '):''}
+Responda SOMENTE com um array JSON, sem markdown. Cada item: {"type":"mc"|"open","subjects":["1 a 3 assuntos médicos curtos abordados pela questão"],"stem":"enunciado","options":["texto A","texto B","texto C","texto D","texto E"] (só em mc, sem prefixo de letra),"correct":"A"|"B"|"C"|"D"|"E" (só em mc),"key_points":["pontos essenciais esperados na resposta"] (só em open, 3 a 6 itens)}.`;
+}
+
+/* ---------- Geração ---------- */
+async function gen(o){
+ if(S.busy)return;
+ o.topic=String(o.topic||'').trim();
+ o.n=Math.max(1,Math.min(40,parseInt(o.n)||5));
+ if(!o.topic){S.err='Digite pelo menos um assunto.';S.screen=S.last&&S.screen==='sum'?'sum':'home';render();return}
+ const back=S.screen==='load'?'home':S.screen;
+ S.busy=true;S.err='';S.screen='load';S.prog='';S.cust=false;render();
+ try{
+  const qs=[];let tries=0;
+  while(qs.length<o.n&&tries<6){
+   tries++;
+   const k=Math.min(10,o.n-qs.length);
+   S.prog=qs.length?`${qs.length} de ${o.n} questões prontas…`:'';render();
+   let r=await askAI(genPrompt(o,k,qs.map(q=>q.stem)));
+   if(r&&!Array.isArray(r))r=r.questions||r.items;
+   if(!Array.isArray(r))throw new Error('A IA não devolveu uma lista de questões.');
+   r.map(normQ).filter(Boolean).forEach(q=>{if(qs.length<o.n)qs.push(q)});
+  }
+  if(!qs.length)throw new Error('A IA não devolveu questões válidas. Tente novamente.');
+  Object.assign(S,{run:o,qs,i:0,res:[],sel:'',txt:'',fb:null,screen:'quiz',active:true});
+  if(qs.length<o.n)S.err=`Foram geradas ${qs.length} de ${o.n} questões válidas.`;
+ }catch(e){S.err=e.message||'Erro inesperado.';S.screen=back}
+ S.busy=false;render();
+}
+
+function startHome(){S.cfg.n=Math.max(1,Math.min(40,parseInt(S.cfg.n)||5));gen({...S.cfg})}
+
+/* ---------- Correção ---------- */
+async function answer(){
+ const q=S.qs[S.i],mc=q.type==='mc';
+ const resp=mc?S.sel:S.txt.trim();if(!resp||S.busy)return;
+ S.busy=true;S.err='';render();
+ const p=`Você é professor de medicina corrigindo a resposta de um estudante. Seja específico, didático e rigoroso, em português do Brasil, com base no consenso da literatura médica. Não cite capítulos nem invente referências.
+Assuntos: ${q.subjects.join(', ')}. Nível: ${S.run.level}.
+Questão: ${q.stem}
+${mc?`Alternativas: ${q.options.map((o,i)=>LET[i]+') '+o).join(' | ')}
+Gabarito: ${q.correct}. Resposta do estudante: ${resp}.`:`Pontos essenciais esperados: ${q.key_points.join('; ')}.
+Aceite respostas equivalentes que estejam cientificamente corretas, mesmo com outras palavras.
+Resposta do estudante: """${resp}"""`}
+Responda SOMENTE com JSON: {"verdict":"correct"|"partial"|"incorrect"${mc?' (deve ser '+(resp===q.correct?'"correct"':'"incorrect"')+')':''},"explanation":"raciocínio clínico que justifica a resposta correta${mc?' e por que a alternativa escolhida está certa ou errada':' e o que o estudante acertou ou deixou de dizer'}","conceptual_errors":["erros conceituais identificados; lista vazia se não houver"],"pathophysiology":"mecanismo fisiopatológico relevante, em passos causais","better_answer":"${mc?'como raciocinar para eliminar distratores e chegar à resposta':'modelo de resposta melhor e bem estruturada, destacando os pontos essenciais'}","review_topics":["1 a 3 assuntos específicos para revisar"]}`;
+ try{
+  const r=await askAI(p);
+  if(!r||typeof r!=='object'||Array.isArray(r))throw new Error('A correção da IA veio em formato inválido. Tente novamente.');
+  const v=mc?(resp===q.correct?'c':'i'):({correct:'c',partial:'p',incorrect:'i'}[r.verdict]||null);
+  if(!v||!r.explanation)throw new Error('A correção da IA veio incompleta. Tente novamente.');
+  const arr=x=>Array.isArray(x)?x.map(String).filter(Boolean):[];
+  const fb={v,explanation:String(r.explanation),conceptual_errors:arr(r.conceptual_errors),pathophysiology:String(r.pathophysiology||''),better_answer:String(r.better_answer||''),review_topics:arr(r.review_topics)};
+  S.fb=fb;S.res[S.i]={q,resp,v,fb};
+ }catch(e){S.err=e.message||'Erro ao corrigir.'}
+ S.busy=false;render();
+}
+
+/* ---------- Resultado ---------- */
+function stats(res){
+ const m={};
+ res.forEach(r=>r.q.subjects.forEach(s=>{
+  const o=m[s]||(m[s]={t:0,c:0,pa:0,e:0,pts:0});
+  o.t++;o.pts+=VER[r.v][2];
+  if(r.v==='c')o.c++;else if(r.v==='p')o.pa++;else o.e++;
+ }));
+ return m;
+}
+
+function next(){
+ if(S.i+1<S.qs.length){S.i++;S.sel='';S.txt='';S.fb=null;S.err=''}
+ else{
+  const n=S.qs.length,pts=S.res.reduce((a,r)=>a+VER[r.v][2],0),pct=Math.round(pts/n*100),st=stats(S.res);
+  S.last={run:S.run,res:S.res.slice(),pts,n,pct,st};
+  const subs={};Object.entries(st).forEach(([k,o])=>subs[k]={t:o.t,pts:o.pts});
+  const wrong=S.res.filter(r=>r.v!=='c').map(r=>({stem:r.q.stem.slice(0,160),subs:r.q.subjects}));
+  const h=store.get();h.push({d:Date.now(),topic:S.run.topic,level:S.run.level,fmt:S.run.fmt,pts,n,pct,subs,wrong});
+  store.set(h.slice(-60));
+  S.active=false;S.cust=false;S.err='';S.screen='sum';
+ }
+ render();
+}
+
+const fmtPts=p=>p%1?p.toFixed(1).replace('.',','):String(p);
+const statRows=L=>Object.entries(L.st).map(([s,o])=>({s,...o,pct:Math.round(o.pts/o.t*100)})).sort((a,b)=>a.pct-b.pct||b.e-a.e);
+
+/* ---------- Telas ---------- */
+function home(){
+ const c=S.cfg,seg=(k,vals)=>vals.map(([v,l])=>`<button data-k="${k}" data-v="${v}" class="${c[k]==v?'on':''}">${l}</button>`).join('');
+ return `<h1>O que você quer estudar hoje?</h1>
+ <div class="card"><label class="t" style="margin-top:0" for="topic">Assuntos médicos (um ou vários)</label>
+ <textarea id="topic" placeholder="Ex.: anemias, hemostasia, fisiologia renal e insuficiência cardíaca">${esc(c.topic)}</textarea>
+ <div class="chips">${['Angina pectoris','Edema','Choque','Anemia','Insuficiência cardíaca'].map(t=>`<button data-chip="${esc(t)}">+ ${esc(t)}</button>`).join('')}</div>
+ <label class="t" for="nq">Número de questões (1 a 40)</label><input id="nq" type="number" inputmode="numeric" min="1" max="40" value="${esc(c.n)}">
+ <label class="t">Dificuldade</label><div class="seg">${seg('level',[['Básico','Básico'],['Intermediário','Intermediário'],['Avançado','Avançado']])}</div>
+ <label class="t">Formato</label><div class="seg">${seg('fmt',[['mc','Múltipla escolha'],['open','Discursiva'],['misto','Misto']])}</div>
+ <button class="primary" data-a="gen">Gerar questões com IA</button>
+ ${S.err?`<div class="err">${esc(S.err)}</div>`:''}</div>
+ <p class="note">As questões e correções são geradas por inteligência artificial. O histórico fica salvo apenas neste navegador. Conteúdo gerado por IA pode conter erros: confira nos livros-texto.</p>`;
+}
+
+function load(){
+ return `<div class="card center"><div class="spin"></div><b>Gerando questões inéditas…</b><p class="note">${esc(S.prog||'Isso leva de 10 a 40 segundos (mais tempo para quizzes grandes).')}</p></div>`;
+}
+
+function quiz(){
+ const q=S.qs[S.i];if(!q)return home();
+ const mc=q.type==='mc',done=!!S.fb,pct=Math.round((S.i+(done?1:0))/S.qs.length*100);
+ let h=`<div class="bar"><div style="width:${pct}%"></div></div><div class="meta"><span>Questão ${S.i+1} de ${S.qs.length}</span><span>${esc(q.subjects.join(' · '))}</span></div><div class="card"><p class="stem">${esc(q.stem)}</p>`;
+ if(mc)h+=q.options.map((o,i)=>{const L=LET[i];let c=!done&&S.sel===L?'sel':'';if(done){if(L===q.correct)c='right';else if(L===S.sel)c='wrong'}return `<button class="opt ${c}" data-opt="${L}" ${done?'disabled':''}><b>${L}</b><span>${esc(o)}</span></button>`}).join('');
+ else h+=`<textarea id="txt" placeholder="Digite sua resposta…" ${done?'disabled':''}>${esc(S.txt)}</textarea>`;
+ if(!done)h+=`<button class="primary" data-a="ans" ${S.busy||!(mc?S.sel:S.txt.trim())?'disabled':''}>${S.busy?'Corrigindo…':'Responder'}</button>`;
+ h+=`</div>`;
+ if(S.err)h+=`<div class="err">${esc(S.err)}</div>`;
+ if(done){
+  const f=S.fb,v=VER[f.v];
+  h+=`<div class="card fb"><span class="badge ${v[1]}">${v[0]}</span><p>${esc(f.explanation)}</p>
+  ${!mc?`<h3>Pontos essenciais esperados</h3><ul>${q.key_points.map(e=>`<li>${esc(e)}</li>`).join('')}</ul>`:''}
+  ${f.conceptual_errors.length?`<h3>Erros conceituais</h3><ul>${f.conceptual_errors.map(e=>`<li>${esc(e)}</li>`).join('')}</ul>`:''}
+  ${f.pathophysiology?`<h3>Mecanismo fisiopatológico</h3><p>${esc(f.pathophysiology)}</p>`:''}
+  ${f.better_answer?`<h3>${mc?'Como chegar à resposta':'Como construir uma resposta melhor'}</h3><p>${esc(f.better_answer)}</p>`:''}</div>
+  <button class="primary" data-a="next" style="margin-top:0">${S.i+1<S.qs.length?'Próxima questão':'Ver resultado'}</button>`;
+ }
+ return h;
+}
+
+function sum(){
+ const L=S.last;if(!L)return home();
+ const st=statRows(L),strong=st.filter(x=>x.pct>=80),weak=st.filter(x=>x.pct<70);
+ const nc=L.res.filter(r=>r.v==='c').length,np=L.res.filter(r=>r.v==='p').length,ne=L.res.length-nc-np;
+ const errs=uniq(L.res.flatMap(r=>r.fb.conceptual_errors||[])).slice(0,8);
+ const wrongN=L.res.filter(r=>r.v!=='c').length;
+ const txt=(strong.length?`Pontos fortes: ${strong.map(x=>esc(x.s)).join(', ')}. `:'')+(weak.length?`Maiores dificuldades: ${weak.map(x=>esc(x.s)).join(', ')}.`:'Nenhum assunto abaixo de 70%.');
+ let cust='';
+ if(S.cust)cust=`<div class="card"><h2>Quiz personalizado</h2>${st.map((x,i)=>`<label class="chk"><input type="checkbox" data-sub="${esc(x.s)}" ${S.pick.has(x.s)?'checked':''}><span>${esc(x.s)} <span class="note">(${x.pct}%)</span></span></label>`).join('')}
+ <label class="t" for="cn">Número de questões (1 a 40)</label><input id="cn" type="number" inputmode="numeric" min="1" max="40" value="5">
+ <button class="primary" data-a="custgo">Gerar quiz personalizado</button></div>`;
+ return `<h2>Resultado: ${esc(L.run.topic.slice(0,80))}</h2>
+ ${S.err?`<div class="err">${esc(S.err)}</div>`:''}
+ <div class="card"><div class="score">${fmtPts(L.pts)}/${L.n}</div><p class="note" style="margin:6px 0 0">${L.pct}% de aproveitamento · ${nc} corretas · ${np} parciais (meio ponto) · ${ne} incorretas</p><p style="margin:10px 0 0;font-size:15px">${txt}</p></div>
+ <div class="card"><h2>Desempenho por assunto</h2>${st.map(x=>`<div class="row" style="flex-direction:column;gap:4px"><div style="display:flex;justify-content:space-between;gap:10px"><span>${esc(x.s)}</span><b>${x.pct}%</b></div><div class="bar" style="margin:0"><div style="width:${x.pct}%"></div></div><span class="note">${x.c} acerto(s) · ${x.pa} parcial(is) · ${x.e} erro(s) em ${x.t} questão(ões)</span></div>`).join('')}
+ <p class="note">Questões com mais de um assunto contam em cada assunto associado.</p></div>
+ <div class="card"><h2>Assuntos para revisar</h2>${weak.length?`<div class="fb"><ul>${weak.map(x=>`<li>${esc(x.s)} — ${x.e} erro(s), ${x.pct}%</li>`).join('')}</ul></div>`:'<p class="note">Sem pendências. Tente um nível mais difícil.</p>'}
+ ${errs.length?`<h2 style="margin-top:16px">Principais erros conceituais</h2><div class="fb"><ul>${errs.map(e=>`<li>${esc(e)}</li>`).join('')}</ul></div>`:''}</div>
+ <div class="card"><h2>Por questão</h2>${L.res.map((r,i)=>`<div class="row"><span>${i+1}. ${esc(r.q.subjects.join(' · ').slice(0,70))}</span><span class="badge ${VER[r.v][1]}" style="margin:0;white-space:nowrap">${VER[r.v][0]}</span></div>`).join('')}</div>
+ <h2>Continuar estudando</h2>
+ <button class="primary" data-a="rev" style="margin-top:0" ${wrongN?'':'disabled'}>Revisar questões erradas (${wrongN})</button>
+ <button class="ghost" data-a="weak">Reforçar assuntos fracos</button>
+ <button class="ghost" data-a="cust">Novo quiz personalizado</button>
+ <button class="ghost" data-a="home" style="margin-bottom:14px">Nova rodada do zero</button>${cust}`;
+}
+
+function hist(){
+ const h=store.get().slice().reverse(),avg=h.length?Math.round(h.reduce((a,x)=>a+x.pct,0)/h.length):0;
+ if(!h.length)return `<h2>Histórico de desempenho</h2><div class="card center"><p>Nenhuma rodada concluída ainda.</p><button class="ghost" data-a="home">Começar a estudar</button></div>`;
+ const agg={};h.forEach(x=>Object.entries(x.subs||{}).forEach(([k,o])=>{const a=agg[k]||(agg[k]={t:0,pts:0});a.t+=o.t;a.pts+=o.pts}));
+ const rows=Object.entries(agg).map(([s,o])=>({s,pct:Math.round(o.pts/o.t*100),t:o.t})).sort((a,b)=>a.pct-b.pct);
+ const weak=rows.filter(x=>x.pct<70).slice(0,6);
+ return `<h2>Histórico de desempenho</h2>${S.err?`<div class="err">${esc(S.err)}</div>`:''}
+ <div class="card"><div class="note">Média em ${h.length} rodada(s): <b style="color:var(--ink)">${avg}%</b> (barras: mais recente à esquerda)</div><div class="hbar">${h.slice(0,20).map(x=>`<div style="height:${Math.max(x.pct,3)}%" title="${x.pct}%"></div>`).join('')}</div></div>
+ ${rows.length?`<div class="card"><h2>Assuntos (todo o histórico)</h2>${rows.slice(0,12).map(x=>`<div class="row"><span>${esc(x.s)}</span><b>${x.pct}% <span class="note">(${x.t})</span></b></div>`).join('')}
+ <button class="primary" data-a="histweak" ${weak.length?'':'disabled'}>Quiz de reforço com os assuntos fracos</button></div>`:''}
+ <div class="card">${h.map(x=>`<div class="row"><span>${esc(String(x.topic).slice(0,90))}<br><span class="note">${new Date(x.d).toLocaleDateString('pt-BR')}, ${esc(x.level)}</span></span><b>${x.pct}%</b></div>`).join('')}</div>
+ <button class="ghost" data-a="clr">${S.clr?'Toque de novo para apagar tudo':'Limpar histórico'}</button>`;
+}
+
+/* ---------- Render ---------- */
+function render(){
+ const nav=[['home','Início']];
+ if(S.active)nav.push(['quiz','Quiz atual']);
+ if(S.last)nav.push(['sum','Resultado']);
+ nav.push(['hist','Histórico']);
+ $('#nav').innerHTML=nav.map(([a,l])=>`<button data-a="${a}" class="${S.screen===a?'on':''}">${l}</button>`).join('');
+ const A=$('#app');
+ try{A.innerHTML=({home,load,quiz,sum,hist}[S.screen]||home)()}
+ catch(e){A.innerHTML=`<div class="card"><div class="err">Erro ao exibir a tela: ${esc(e.message)}</div><button class="ghost" data-a="home">Voltar ao início</button></div>`}
+ const t=$('#topic');if(t)t.oninput=()=>{S.cfg.topic=t.value};
+ const nq=$('#nq');if(nq)nq.oninput=()=>{S.cfg.n=nq.value};
+ const x=$('#txt');if(x&&!S.fb)x.oninput=()=>{S.txt=x.value;const b=$('[data-a=ans]');if(b)b.disabled=!x.value.trim()||S.busy};
+}
+
+/* ---------- Eventos ---------- */
+function go(s){if(S.busy)return;S.screen=s;S.err='';S.clr=false;render()}
+document.addEventListener('change',e=>{
+ const c=e.target.closest('input[data-sub]');if(!c)return;
+ if(c.checked)S.pick.add(c.dataset.sub);else S.pick.delete(c.dataset.sub);
+});
+document.addEventListener('click',e=>{
+ const b=e.target.closest('button');if(!b||S.busy)return;
+ const d=b.dataset,L=S.last;
+ if(d.chip){const t=S.cfg.topic.trim();S.cfg.topic=t?t.replace(/[,;]\s*$/,'')+', '+d.chip:d.chip;render()}
+ else if(d.k){S.cfg[d.k]=d.v;render()}
+ else if(d.opt){if(!S.fb){S.sel=d.opt;render()}}
+ else if(d.a==='gen')startHome();
+ else if(d.a==='ans')answer();
+ else if(d.a==='next')next();
+ else if(d.a==='home'||d.a==='hist'||d.a==='sum'||d.a==='quiz')go(d.a);
+ else if(d.a==='clr'){if(S.clr){store.set([]);S.clr=false}else S.clr=true;render()}
+ else if(d.a==='cust'){S.cust=!S.cust;S.pick=new Set();render()}
+ else if(d.a==='rev'&&L){
+  const w=L.res.filter(r=>r.v!=='c');if(!w.length)return;
+  gen({topic:uniq(w.flatMap(r=>r.q.subjects)).join(', '),level:L.run.level,fmt:L.run.fmt,n:Math.min(40,w.length),
+   extra:'Este é um quiz de REVISÃO. O estudante errou questões com estes enunciados: '+w.map(r=>'"'+r.q.stem.slice(0,150)+'"').join(' | ')+'. Crie questões NOVAS sobre os mesmos conceitos, com outros casos clínicos e outros enfoques; não copie esses enunciados.'});
+ }
+ else if(d.a==='weak'&&L){
   const st=statRows(L);let w=st.filter(x=>x.pct<70);if(!w.length)w=st.slice(0,3);
   gen({topic:w.map(x=>x.s).join(', '),level:L.run.level,fmt:L.run.fmt,n:Math.max(1,Math.min(40,parseInt(S.cfg.n)||5)),
    extra:'Este é um quiz de REFORÇO nos assuntos em que o estudante teve menor desempenho. Explore conceitos centrais desses assuntos com casos clínicos inéditos.'});
@@ -22,4 +343,3 @@ render();
 </script>
 </body>
 </html>
-
