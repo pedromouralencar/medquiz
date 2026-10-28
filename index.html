@@ -68,12 +68,36 @@ input:focus,textarea:focus,button:focus-visible{outline:2px solid var(--accent);
 <script>
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const $=s=>document.querySelector(s);
-let sample=null;
+
+const API_URL = 'https://medquiz-api.jpmouraa2017.workers.dev/';
+
+async function askAI(prompt) {
+  const response = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt })
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Erro ao consultar a IA.');
+  }
+
+  let text = data.text.trim();
+  text = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error('A IA não retornou JSON válido. Tente novamente.');
+  }
+}
+
 const S={screen:'home',cfg:{topic:'',level:'Intermediário',n:5,fmt:'misto'},qs:[],i:0,res:[],sel:'',txt:'',busy:false,err:'',fb:null,clr:false};
+ render();
 const VER={c:['Correta','c',1],p:['Parcialmente correta','p',.5],i:['Incorreta','i',0]};
 const store={get(){try{return JSON.parse(localStorage.getItem('medquiz_hist')||'[]')}catch{return[]}},set(v){try{localStorage.setItem('medquiz_hist',JSON.stringify(v))}catch{}}};
-
-(async()=>{try{sample=await window.claude.use('sample')}catch{sample=null}render()})();
 
 function errMsg(e){const c=e&&e.code;
  if(c==='not_granted')return 'Você não autorizou o uso do Claude neste aplicativo. Toque no botão de novo e aceite a permissão.';
@@ -81,14 +105,14 @@ function errMsg(e){const c=e&&e.code;
  return 'Não foi possível concluir a chamada de IA. '+(e&&e.message?e.message:'Tente novamente.')}
 
 async function gen(){
- const c=S.cfg;if(!c.topic.trim()||!sample)return;
+ const c=S.cfg;if(!c.topic.trim())return;
  S.screen='load';S.err='';render();
  const f={mc:'todas de múltipla escolha (type "mc")',open:'todas discursivas (type "open")',misto:'metade múltipla escolha ("mc") e metade discursivas ("open"), intercaladas'}[c.fmt];
  const p=`Você é professor de medicina e elabora provas para estudantes brasileiros. Crie ${c.n} questões INÉDITAS sobre: "${c.topic.trim()}". Nível: ${c.level} (Básico = conceitos e definições; Intermediário = casos clínicos curtos e fisiopatologia; Avançado = casos complexos, diagnóstico diferencial e integração de mecanismos). Formato: ${f}.
 Regras: português do Brasil; contextualize com vinhetas clínicas quando adequado; varie os subtópicos (definição, etiologia, fisiopatologia, quadro clínico, diagnóstico, morfologia, tratamento); alternativas plausíveis, uma única correta, com a letra correta variando entre A–D; use critérios consistentes com Robbins & Cotran, Harrison, Guyton & Hall e Abbas conforme o assunto, mas NÃO cite capítulos, páginas, autores de artigos nem invente referências.
 Responda SOMENTE com um array JSON, sem markdown. Cada item: {"type":"mc"|"open","subtopic":"string curta","stem":"enunciado","options":["texto A","texto B","texto C","texto D"] (só em mc, sem prefixo de letra),"correct":"A"|"B"|"C"|"D" (só em mc),"key_points":["pontos essenciais que uma boa resposta discursiva deve conter"] (só em open, 3 a 6 itens)}.`;
  try{
-  let r=await sample.json(p,{cache:false,modelTier:'default'});
+  let r=await askAI(p);
   if(r&&!Array.isArray(r))r=r.questions||r.items;
   const qs=(r||[]).filter(q=>q&&q.stem&&(q.type==='open'?Array.isArray(q.key_points):(Array.isArray(q.options)&&q.options.length===4&&'ABCD'.includes(q.correct)))).slice(0,c.n);
   if(!qs.length)throw{message:'A IA não devolveu questões válidas.'};
@@ -109,7 +133,7 @@ Gabarito: ${q.correct}. Resposta do estudante: ${resp}.`:`Pontos essenciais espe
 Resposta do estudante: """${resp}"""`}
 Responda SOMENTE com JSON: {"verdict":"correct"|"partial"|"incorrect"${mc?' (deve ser '+(resp===q.correct?'"correct"':'"incorrect"')+')':''},"explanation":"raciocínio que justifica a resposta correta${mc?' e por que a alternativa escolhida está certa ou errada':' e o que o estudante acertou ou deixou de dizer'}","conceptual_errors":["erros conceituais identificados; lista vazia se não houver"],"pathophysiology":"mecanismo fisiopatológico relevante, em passos causais","better_answer":"${mc?'como raciocinar para eliminar distratores e chegar à resposta':'modelo de resposta melhor e bem estruturada'}","review_topics":["1 a 3 assuntos específicos para revisar"]}`;
  try{
-  const r=await sample.json(p,{cache:false,modelTier:'default'});
+  const r=await askAI(p)
   let v={correct:'c',partial:'p',incorrect:'i'}[r.verdict]||'i';
   if(mc)v=resp===q.correct?'c':'i';
   S.fb={...r,v};S.res[S.i]={q,resp,v,fb:S.fb};
@@ -137,10 +161,10 @@ function render(){
   <label class="t">Dificuldade</label><div class="seg">${seg('level',[['Básico','Básico'],['Intermediário','Intermediário'],['Avançado','Avançado']])}</div>
   <label class="t">Número de questões</label><div class="seg">${seg('n',[[3,'3'],[5,'5'],[8,'8'],[10,'10']])}</div>
   <label class="t">Formato</label><div class="seg">${seg('fmt',[['mc','Múltipla escolha'],['open','Aberta'],['misto','Misto']])}</div>
-  <button class="primary" data-a="gen" ${sample?'':'disabled'}>Gerar questões com IA</button>
-  ${sample?'':'<div class="err">O recurso de IA do Claude não está disponível nesta visualização. Abra o aplicativo pelo link publicado, logado na sua conta.</div>'}
+  <button class="primary" data-a="gen">Gerar questões com IA</button>
+  
   ${S.err?`<div class="err">${esc(S.err)}</div>`:''}</div>
-  <p class="note">As questões e correções são geradas pelo Claude da sua conta, sem chave de API. Na primeira geração o Claude pede sua autorização. Cada rodada usa 1 chamada para gerar as questões e 1 por resposta; no plano gratuito há limite de uso que varia conforme a demanda, então rodadas menores ajudam a não atingi-lo. O histórico fica salvo apenas neste navegador. Conteúdo gerado por IA pode conter erros: confira nos livros-texto.</p>`;
+<p class="note">As questões e correções são geradas por inteligência artificial. O histórico fica salvo apenas neste navegador. Conteúdo gerado por IA pode conter erros: confira nos livros-texto.</p> 
   const t=$('#topic');t.oninput=()=>{S.cfg.topic=t.value};t.onkeydown=e=>{if(e.key==='Enter')gen()};
  }
  else if(S.screen==='load')A.innerHTML=`<div class="card center"><div class="spin"></div><b>Gerando questões inéditas sobre “${esc(S.cfg.topic)}”…</b><p class="note">Isso leva de 10 a 40 segundos.</p></div>`;
